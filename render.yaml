@@ -3,7 +3,7 @@ services:
     env: python
     region: frankfurt
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT run:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
     repo: https://github.com/your-repo
     envVars:
       - key: OPENROUTER_API_KEY

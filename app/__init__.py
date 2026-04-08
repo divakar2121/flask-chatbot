@@ -15,3 +15,6 @@ def create_app():
     app.register_blueprint(chat_bp)
 
     return app
+
+
+app = create_app()
