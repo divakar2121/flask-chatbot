@@ -165,10 +165,9 @@ def chat(messages, model="deepseek/deepseek-chat-v3"):
 
 MIT License - See LICENSE file for details
 
-## 👨‍💻 Authors
+## 👨‍💻 Author
 
-- Divakar
-- Ravi
+Divakar Ravi
 
 ## 🙏 Acknowledgments
 
