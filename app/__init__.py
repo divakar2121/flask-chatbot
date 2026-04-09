@@ -11,10 +11,12 @@ def create_app():
     from routes.main import main_bp
     from routes.chat import chat_bp
     from routes.upload import upload_bp
+    from routes.sync import sync_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(upload_bp)
+    app.register_blueprint(sync_bp)
 
     return app
 

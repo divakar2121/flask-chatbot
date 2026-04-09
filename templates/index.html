@@ -152,6 +152,9 @@
                 <span class="px-3 py-1 bg-gray-800 text-gray-400 rounded-full border border-gray-600">
                     <i class="fa-solid fa-file-shield mr-1"></i> Policy Analysis
                 </span>
+                <span id="sync-indicator" class="px-3 py-1 bg-gray-800 text-gray-500 rounded-full border border-gray-600" title="Checking sync status...">
+                    <i class="fa-solid fa-cloud mr-1"></i><span class="text-xs">Sync</span>
+                </span>
             </div>
         </header>
 
@@ -281,6 +284,12 @@
         let currentDocId = null;
         let uploadedDocs = [];
         let currentMode = "analyst";
+
+        // Initialize sync status on load
+        (async function initSync() {
+            const status = await checkSyncStatus();
+            updateSyncIndicator(status);
+        })();
 
         // Mode selector
         function setMode(mode) {
@@ -423,12 +432,61 @@
                     addMessage('Error: ' + data.error, false);
                 } else {
                     addMessage(data.reply, false);
+                    // Sync in background
+                    trySync();
                 }
             } catch (err) {
                 hideTyping();
                 addMessage('Connection error: ' + err.message, false);
+                // Queue for later sync when offline
+                queueMessageForSync(message);
             }
         }
+
+        // Sync functions
+        async function checkSyncStatus() {
+            try {
+                const res = await fetch('/sync/status');
+                return await res.json();
+            } catch { return { online: false, ready: false, pending_count: 0 }; }
+        }
+
+        async function trySync() {
+            const status = await checkSyncStatus();
+            if (status.ready && status.pending_count > 0) {
+                try {
+                    await fetch('/sync/upload', { method: 'POST' });
+                } catch {}
+            }
+            updateSyncIndicator(status);
+        }
+
+        function updateSyncIndicator(status) {
+            const indicator = document.getElementById('sync-indicator');
+            if (indicator) {
+                if (!status.configured) {
+                    indicator.className = 'text-gray-500';
+                    indicator.title = 'Cloud sync not configured';
+                } else if (status.online && status.pending_count === 0) {
+                    indicator.className = 'text-green-500';
+                    indicator.title = 'All synced';
+                } else if (status.online) {
+                    indicator.className = 'text-yellow-500';
+                    indicator.title = `${status.pending_count} pending`;
+                } else {
+                    indicator.className = 'text-red-500';
+                    indicator.title = 'Offline - messages queued';
+                }
+            }
+        }
+
+        function queueMessageForSync(msg) {
+            localStorage.setItem('offline_queue', (localStorage.getItem('offline_queue') || '') + msg + '|||');
+        }
+
+        // Auto-sync on reconnect
+        window.addEventListener('online', trySync);
+        setInterval(trySync, 30000); // Check every 30s
 
         async function resetChat() {
             try {

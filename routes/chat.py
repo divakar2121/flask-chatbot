@@ -5,7 +5,9 @@ from utils.database import (
     get_messages,
     clear_messages,
     get_all_conversations,
+    add_to_queue,
 )
+from utils.sync import check_connection, sync_messages_to_cloud
 
 chat_bp = Blueprint("chat", __name__)
 
@@ -20,8 +22,23 @@ def chat():
 
     try:
         response = openrouter_chat([{"role": "user", "content": user_message}])
+
+        # Add to local DB
         add_message("user", user_message)
         add_message("assistant", response)
+
+        # Queue for sync
+        add_to_queue("user", user_message)
+        add_to_queue("assistant", response)
+
+        # Try immediate sync if online
+        if check_connection():
+            from utils.database import get_queue
+
+            queue = get_queue()
+            if queue:
+                sync_messages_to_cloud(queue)
+
         return jsonify({"reply": response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
