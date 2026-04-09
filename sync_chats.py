@@ -28,7 +28,7 @@ from pathlib import Path
 
 SERVER_URL = os.environ.get("SERVER_URL", "https://my-dev--flsk-chtbt-th8v.diploi.me")
 SCRIPT_DIR = Path(__file__).parent.resolve()
-CHATS_DIR = SCRIPT_DIR / "chats"
+CHATS_DIR = SCRIPT_DIR / "data" / "chat_history"
 
 
 def get_month_name(month_num):
