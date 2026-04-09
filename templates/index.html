@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthGuard AI - Policy Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Dark Theme with White/Bright Text */
+        body {
+            background: #000000;
+            color: #ffffff;
+        }
+        
+        .bg-dark {
+            background: #0a0a0a;
+        }
+        
+        .glass-card {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid #333333;
+        }
+
+        .input-dark {
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            color: #ffffff;
+        }
+        
+        .input-dark::placeholder {
+            color: #888888;
+        }
+        
+        .input-dark:focus {
+            border-color: #6366f1;
+            outline: none;
+        }
+
+        /* Video Background */
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0.5;
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: -1;
+        }
+
+        /* 3D Animated Background */
+        .bg-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+            background: linear-gradient(180deg, #000000 0%, #0a0a0a 100%);
+        }
+        
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .shape-1 { width: 300px; height: 300px; background: #6366f1; top: 10%; left: 10%; }
+        .shape-2 { width: 200px; height: 200px; background: #8b5cf6; top: 60%; right: 10%; animation-delay: -5s; }
+        .shape-3 { width: 150px; height: 150px; background: #06b6d4; bottom: 20%; left: 30%; animation-delay: -10s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+
+        .chat-message { max-width: 80%; }
+        
+        .typing-indicator span {
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #ffffff, #a0a0a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* White text overrides */
+        body, .text-gray-300, .text-gray-400, .text-purple-300, .text-green-400 {
+            color: #ffffff !important;
+        }
+        
+        .text-gray-500 {
+            color: #888888 !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative">
+    <!-- Video Background -->
+    <video class="video-bg" id="bgVideo" autoplay="autoplay" muted="muted" loop="loop" playsinline="playsinline">
+        <source src="/static/background.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+
+    <!-- 3D Animated Background -->
+    <div class="bg-3d" id="fallbackBg" style="display:none;">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+    </div>
+
+    <!-- Fallback 3D Background -->
+    <div class="bg-3d">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+    </div>
+
+    <div class="max-w-5xl mx-auto p-4 relative z-10">
+        <!-- Header -->
+        <header class="text-center py-8">
+            <div class="flex items-center justify-center gap-4 mb-3">
+                <i class="fa-solid fa-shield-heart text-5xl text-white"></i>
+                <h1 class="text-5xl font-bold gradient-text">HealthGuard AI</h1>
+                <i class="fa-solid fa-shield-heart text-5xl text-white"></i>
+            </div>
+            <p class="text-xl text-gray-300">Your Trusted Health Insurance Advisor</p>
+            <div class="flex items-center justify-center gap-4 mt-3 text-sm">
+                <span class="px-3 py-1 bg-gray-800 text-gray-400 rounded-full border border-gray-600">
+                    <i class="fa-solid fa-heart-pulse mr-1"></i> Health Insurance
+                </span>
+                <span class="px-3 py-1 bg-gray-800 text-gray-400 rounded-full border border-gray-600">
+                    <i class="fa-solid fa-file-shield mr-1"></i> Policy Analysis
+                </span>
+            </div>
+        </header>
+
+        <!-- Quick Actions -->
+        <div class="glass-card rounded-2xl p-5 mb-4">
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button onclick="loadExample('compare')" 
+                        class="bg-gray-800 hover:bg-gray-700 border border-gray-600 px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center">
+                        <i class="fa-solid fa-scale-balanced text-white"></i> <span class="text-white">Compare</span>
+                    </button>
+                    <button onclick="loadExample('loopholes')" 
+                        class="bg-gray-800 hover:bg-gray-700 border border-gray-600 px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center">
+                        <i class="fa-solid fa-magnifying-glass text-white"></i> <span class="text-white">Loopholes</span>
+                    </button>
+                    <button onclick="loadExample('claims')" 
+                        class="bg-gray-800 hover:bg-gray-700 border border-gray-600 px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center">
+                        <i class="fa-solid fa-file-shield text-white"></i> <span class="text-white">Claim Tips</span>
+                    </button>
+                    <button onclick="loadExample('rights')" 
+                        class="bg-gray-800 hover:bg-gray-700 border border-gray-600 px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center">
+                        <i class="fa-solid fa-gavel text-white"></i> <span class="text-white">Your Rights</span>
+                    </button>
+                </div>
+                <!-- Mode Selector -->
+                <div class="flex items-center gap-2 bg-gray-800 rounded-xl p-1 border border-gray-600">
+                    <button onclick="setMode('analyst')" id="modeAnalyst" 
+                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-black">
+                        <i class="fa-solid fa-magnifying-glass-chart mr-1"></i>Analyst
+                    </button>
+                    <button onclick="setMode('salesman')" id="modeSalesman" 
+                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-handshake mr-1"></i>Salesman
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload & Document Selection -->
+        <div class="glass-card rounded-2xl p-5 mb-4">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fa-solid fa-upload mr-2"></i>Upload Policy Document (PDF)
+                    </label>
+                    <input type="file" id="pdfInput" accept=".pdf" class="block w-full text-sm text-gray-300
+                        file:mr-4 file:py-3 file:px-4
+                        file:rounded-xl file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-gray-700 file:text-white
+                        bg-gray-800 border border-gray-600 rounded-xl
+                    ">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fa-solid fa-layer-group mr-2"></i>My Documents
+                    </label>
+                    <select id="docSelect" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white">
+                        <option value="">-- Select a document --</option>
+                    </select>
+                </div>
+            </div>
+            <div id="uploadedDocInfo" class="hidden mt-4 p-4 bg-green-900/30 rounded-xl border border-green-700/50">
+                <span class="text-green-400"><i class="fa-solid fa-check-circle mr-2"></i>Document loaded and ready!</span>
+                <button onclick="clearDocument()" class="ml-4 text-red-400 hover:text-red-300 text-sm">Clear All</button>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div id="chatContainer" class="glass-card rounded-2xl p-5 h-[45vh] overflow-y-auto mb-4">
+            <div class="flex items-start gap-4 mb-4">
+                <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-xl border border-gray-500">
+                    🏥
+                </div>
+                <div class="chat-message bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                    <p class="font-bold text-white text-lg mb-2">Namaste! Welcome to HealthGuard AI! 🙏</p>
+                    <p class="text-gray-300">Your personal health insurance advisor for the Indian market.</p>
+                    <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                        <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 text-white">
+                            <i class="fa-solid fa-chart-line text-white mr-2"></i>Compare Policies
+                        </div>
+                        <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 text-white">
+                            <i class="fa-solid fa-file-contract text-white mr-2"></i>Analyze Documents
+                        </div>
+                        <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 text-white">
+                            <i class="fa-solid fa-gavel text-white mr-2"></i>IRDAI Rights
+                        </div>
+                        <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 text-white">
+                            <i class="fa-solid fa-clipboard-check text-white mr-2"></i>Claim Tips
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="glass-card rounded-2xl p-4">
+            <div class="flex gap-3">
+                <input type="text" id="messageInput" placeholder="Ask about health insurance in India..."
+                    class="flex-1 input-dark rounded-xl px-5 py-4 text-lg"
+                    onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" 
+                    class="bg-white text-black font-semibold px-6 py-4 rounded-xl transition-all hover:bg-gray-200">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+                <button onclick="resetChat()" 
+                    class="bg-gray-700 text-white font-semibold px-4 py-4 rounded-xl transition-all hover:bg-gray-600">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center py-6 text-gray-500 text-sm">
+            <p>© 2026 <span class="text-white font-bold">HealthGuard AI</span> | 
+                <span class="text-gray-400">IRDAI Compliant</span> | <span class="text-gray-400">India's Trusted Advisor</span></p>
+        </footer>
+    </div>
+
+    <script>
+        // Variable declarations
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const pdfInput = document.getElementById('pdfInput');
+        const docSelect = document.getElementById('docSelect');
+        const uploadedDocInfo = document.getElementById('uploadedDocInfo');
+        let currentDocId = null;
+        let uploadedDocs = [];
+        let currentMode = "analyst";
+
+        // Mode selector
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('modeAnalyst').className = mode === 'analyst' 
+                ? 'px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-black' 
+                : 'px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-400 hover:text-white';
+            document.getElementById('modeSalesman').className = mode === 'salesman'
+                ? 'px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white text-black'
+                : 'px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-400 hover:text-white';
+            addMessage(`Switched to ${mode === 'analyst' ? 'Insurance Analyst' : 'Insurance Salesman'} mode. How can I help you?`, false);
+        }
+
+        // Video error handler - show fallback background
+        document.getElementById('bgVideo').addEventListener('error', function() {
+            document.getElementById('fallbackBg').style.display = 'block';
+        });
+
+        // PDF Upload Handler
+        pdfInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload', { method: 'POST', body: formData });
+                const data = await response.json();
+                
+                if (data.error) {
+                    addMessage('Upload failed: ' + data.error, false);
+                } else {
+                    currentDocId = data.document_id;
+                    const docName = file.name;
+                    uploadedDocs.push({id: data.document_id, name: docName});
+                    
+                    const option = document.createElement('option');
+                    option.value = data.document_id;
+                    option.textContent = docName;
+                    docSelect.appendChild(option);
+                    docSelect.value = data.document_id;
+                    
+                    uploadedDocInfo.classList.remove('hidden');
+                    addMessage(`📄 Document "${docName}" uploaded! (${data.characters} chars) Ask me anything.`, false);
+                }
+            } catch (err) {
+                addMessage('Upload failed: ' + err.message, false);
+            }
+        });
+
+        docSelect.addEventListener('change', function() {
+            currentDocId = this.value;
+            if (currentDocId) {
+                const doc = uploadedDocs.find(d => d.id === currentDocId);
+                addMessage(`📄 Selected: ${doc ? doc.name : 'Unknown'}`, false);
+            }
+        });
+
+        function clearDocument() {
+            currentDocId = null;
+            uploadedDocInfo.classList.add('hidden');
+            pdfInput.value = '';
+            docSelect.value = '';
+            uploadedDocs = [];
+            while (docSelect.options.length > 1) { docSelect.remove(1); }
+            fetch('/upload/reset', { method: 'POST' });
+        }
+
+        function loadExample(type) {
+            const examples = {
+                'compare': 'Compare two health insurance policies. What are the key differences in coverage, premiums, and claim settlement?',
+                'loopholes': 'What are hidden loopholes in health insurance policies that customers typically miss?',
+                'claims': 'Common reasons for health insurance claim rejection and how to avoid them',
+                'rights': 'What are my rights as a health insurance policyholder in India?'
+            };
+            messageInput.value = examples[type] || '';
+            messageInput.focus();
+        }
+
+        function addMessage(content, isUser) {
+            const div = document.createElement('div');
+            div.className = `flex items-start gap-3 mb-4 ${isUser ? 'flex-row-reverse' : ''}`;
+            div.innerHTML = `
+                <div class="w-10 h-10 rounded-full ${isUser ? 'bg-white text-black' : 'bg-gray-700 text-white'} flex items-center justify-center text-lg border ${isUser ? 'border-gray-300' : 'border-gray-500'}">
+                    ${isUser ? '👤' : '🏥'}
+                </div>
+                <div class="chat-message ${isUser ? 'bg-white text-black' : 'bg-gray-800 text-white'} rounded-xl p-4 border ${isUser ? 'border-gray-300' : 'border-gray-700'}" style="white-space: pre-wrap;">${content}</div>
+            `;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTyping() {
+            const div = document.createElement('div');
+            div.id = 'typingIndicator';
+            div.className = 'flex items-start gap-3 mb-4';
+            div.innerHTML = `
+                <div class="w-10 h-10 rounded-full bg-gray-700 text-white flex items-center justify-center text-lg border border-gray-500">🏥</div>
+                <div class="chat-message bg-gray-800 text-white rounded-xl p-4 border border-gray-700">
+                    <div class="typing-indicator flex gap-2">
+                        <span class="w-3 h-3 bg-white rounded-full"></span>
+                        <span class="w-3 h-3 bg-white rounded-full"></span>
+                        <span class="w-3 h-3 bg-white rounded-full"></span>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function hideTyping() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            messageInput.value = '';
+            showTyping();
+
+            try {
+                const response = await fetch('/upload/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message,
+                        document_id: currentDocId,
+                        mode: currentMode
+                    })
+                });
+
+                const data = await response.json();
+                hideTyping();
+
+                if (data.error) {
+                    addMessage('Error: ' + data.error, false);
+                } else {
+                    addMessage(data.reply, false);
+                }
+            } catch (err) {
+                hideTyping();
+                addMessage('Connection error: ' + err.message, false);
+            }
+        }
+
+        async function resetChat() {
+            try {
+                await fetch('/upload/reset', { method: 'POST' });
+                currentDocId = null;
+                uploadedDocInfo.classList.add('hidden');
+                pdfInput.value = '';
+                docSelect.value = '';
+                uploadedDocs = [];
+                while (docSelect.options.length > 1) { docSelect.remove(1); }
+                chatContainer.innerHTML = `
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-xl border border-gray-500">🏥</div>
+                        <div class="chat-message bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                            <p class="font-bold text-white text-lg mb-2">Namaste! Welcome to HealthGuard AI! 🙏</p>
+                            <p class="text-gray-300">Your personal health insurance advisor for the Indian market.</p>
+                            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 text-white">
+                                    <i class="fa-solid fa-chart-line text-white mr-2"></i>Compare Policies
+                                </div>
+                                <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 text-white">
+                                    <i class="fa-solid fa-file-contract text-white mr-2"></i>Analyze Documents
+                                </div>
+                                <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 text-white">
+                                    <i class="fa-solid fa-gavel text-white mr-2"></i>IRDAI Rights
+                                </div>
+                                <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 text-white">
+                                    <i class="fa-solid fa-clipboard-check text-white mr-2"></i>Claim Tips
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                alert('Failed to reset: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
