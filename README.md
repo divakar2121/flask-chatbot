@@ -2,29 +2,40 @@
 
 An intelligent AI-powered health insurance policy analyzer with dual modes (Analyst & Salesman) for the Indian market.
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue)
-![Flask](https://img.shields.io/badge/Flask-2.2.5-green)
-![License](https://img.shields.io/badge/License-MIT-yellow)
-
 ## 🌟 Features
 
-### Dual Mode System
-- **Analyst Mode** 🔍 - Professional policy analysis, comparison, finding loopholes
-- **Salesman Mode** 🤝 - Persuasive sales, customer handling, closing deals
+### 🤖 AI Capabilities
+- **Policy Analysis** - Detailed breakdown of health insurance policies
+- **Loophole Detection** - Find hidden exclusions and clauses  
+- **Policy Comparison** - Compare different policies objectively
+- **Claim Guidance** - Tips for smooth claim settlement
 
-### Core Capabilities
-- 📄 **PDF Upload** - Upload and analyze policy documents
-- 📊 **Policy Comparison** - Compare different health insurance policies
-- 🔍 **Loophole Detection** - Find hidden exclusions and clauses
-- 💰 **Premium Analysis** - Value assessment and recommendations
-- 📝 **Claim Tips** - Guidance for smooth claim settlement
-- 🇮🇳 **India-Focused** - Tailored for Indian insurance market
+### 📊 Dual Mode System
+- **Analyst Mode** 🔍 - Professional, analytical, thorough
+- **Salesman Mode** 🤝 - Persuasive, customer-focused, sales-oriented
 
-### UI Features
-- 🌑 **Dark Theme** - Modern dark UI with white/bright text
-- 🎬 **Video Background** - Animated background support
-- 📱 **Responsive** - Works on desktop and mobile
-- 🎨 **Professional Design** - Glass-morphism effects
+### 🔐 User Authentication
+- Email-based login
+- User profiles with: name, gender, age, salary range, phone, family details
+- Chats linked to user_id for personalization
+
+### 💾 Data Management
+- **Local SQLite** - Server database at `/app/chat_history.db`
+- **Offline Queue** - Messages queued when offline
+- **Cloud Sync** - Optional InsForge backup
+- **JSON Export** - Organized by date/month
+
+### 📁 Organized Data Storage
+```
+data/chat_history/
+├── latest.json      # All messages
+├── by_date/        # Grouped by day
+└── by_month/     # Grouped by month
+```
+
+### 🔧 SQL Analysis
+- Convert JSON to SQL database for analysis
+- Query with: `sqlite3 chat_data.db`
 
 ## 🚀 Quick Start
 
@@ -32,118 +43,77 @@ An intelligent AI-powered health insurance policy analyzer with dual modes (Anal
 - Python 3.10+
 - OpenRouter API Key
 
-### Installation
-
-1. **Clone the repository:**
-```bash
-git clone https://github.com/divakar2121/flask_insurance_bot.git
-cd flask_insurance_bot
-```
-
-2. **Create virtual environment:**
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# or
-venv\Scripts\activate  # Windows
-```
-
-3. **Install dependencies:**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Configure Environment Variables:**
-```bash
-# Create .env file
-echo "OPENROUTER_API_KEY=your_api_key_here" > .env
-```
-
-5. **Get your OpenRouter API key:**
-   - Visit [OpenRouter.ai](https://openrouter.ai)
-   - Create account and get free API key
-   - Add to `.env` file
-
-6. **Run the application:**
+### Run Locally
 ```bash
 python run.py
+# Open http://localhost:5000
 ```
 
-7. **Open in browser:**
+### Deploy to Production
+```bash
+./sync_all.sh
 ```
-http://localhost:5000
-```
-
-## 🎯 Usage
-
-### Mode Selection
-- Click **Analyst** for detailed policy analysis
-- Click **Salesman** for sales-oriented conversations
-
-### Upload PDF
-1. Click "Upload Policy Document" to select a PDF
-2. Select from dropdown to switch between documents
-3. Ask questions about the uploaded policy
-
-### Quick Actions
-- **Compare** - Compare two policies
-- **Loopholes** - Find hidden exclusions
-- **Claim Tips** - Get claim guidance
-- **Your Rights** - Understand policyholder rights
+This downloads chats and creates SQL database.
 
 ## 📁 Project Structure
 
 ```
-flask_insurance_bot/
+flask_app/
 ├── app/
 │   └── __init__.py          # Flask app factory
 ├── routes/
-│   ├── main.py              # Main routes (home, health)
-│   ├── chat.py              # Chat endpoints
-│   └── upload.py            # PDF upload & document chat
+│   ├── main.py            # Home, health endpoints
+│   ├── chat.py           # Chat API  
+│   ├── upload.py         # PDF upload
+│   ├── sync.py          # Sync endpoints
+│   └── auth.py         # Login/profile
 ├── utils/
-│   ├── openrouter.py         # LLM integration
-│   └── database.py          # SQLite database
+│   ├── openrouter.py     # AI integration
+│   ├── database.py      # SQLite operations
+│   └── sync.py         # Cloud sync
 ├── templates/
-│   └── index.html            # Frontend UI
-├── static/
-│   └── background.mp4       # Video background
-├── .env                     # Environment variables (not in git)
-├── requirements.txt          # Python dependencies
-└── run.py                   # Application entry point
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-| Variable | Description |
-|----------|-------------|
-| `OPENROUTER_API_KEY` | Your OpenRouter API key |
-
-### Changing Models
-Edit `utils/openrouter.py` to change the AI model:
-```python
-def chat(messages, model="deepseek/deepseek-chat-v3"):
+│   └── index.html       # Frontend UI
+├── data/
+│   └── chat_history/  # Exported chats
+├── sync_all.sh          # Complete workflow
+├── sync_chats.sh       # Download chats
+├── json_to_sql.py     # Convert to SQL
+└── chat_data.db      # SQL analytics DB
 ```
 
 ## 🌐 Deployment
 
-### Deploy to Diploi
-1. Push code to GitHub
-2. Connect repository in Diploi dashboard
-3. Add `OPENROUTER_API_KEY` in Environment settings
-4. Deploy
+### Diploi (Current)
+- **URL:** https://my-dev--flsk-chtbt-th8v.diploi.me
+- **Repo:** https://github.com/divakar2121/flask-chatbot
+- Auto-deploys on push to master
 
-### Deploy to Render/Railway/Vercel
-1. Push to GitHub
-2. Connect to your preferred platform
-3. Add `OPENROUTER_API_KEY` environment variable
-4. Deploy
+## 🖥️ Local Workflow
 
-## 🤖 AI Models
+### Download Chats from Server
+```bash
+./sync_all.sh
+```
 
-- **Default:** DeepSeek Chat V3 (free tier)
-- **Alternative:** Google Gemma 3 (free tier)
+This:
+1. Downloads from Diploi server
+2. Saves to `data/chat_history/`
+3. Converts to `chat_data.db`
+
+### Query Data
+```bash
+sqlite3 chat_data.db "SELECT * FROM chats WHERE date = '2026-04-09'"
+```
+
+## 🔐 Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `OPENROUTER_API_KEY` | AI API key (from openrouter.ai) |
+| `INSFORGE_BASE_URL` | Cloud backup URL |
+| `INSFORGE_ANON_KEY` | Cloud backup key |
+| `GOOGLE_CLIENT_ID` | Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth secret |
 
 ## 📝 API Endpoints
 
@@ -153,24 +123,75 @@ def chat(messages, model="deepseek/deepseek-chat-v3"):
 | `/health` | GET | Health check |
 | `/upload` | POST | Upload PDF |
 | `/upload/chat` | POST | Chat with mode |
-| `/upload/reset` | POST | Reset documents |
+| `/auth/login` | POST | Login |
+| `/auth/profile` | GET/POST | User profile |
+| `/chat/history` | GET | All messages |
+| `/sync/status` | GET | Sync status |
+| `/sync/export` | GET | Export JSON |
 
-## 🔐 Security
+## 🏗️ Architecture
 
-- API key stored in `.env` file (not committed to git)
-- Use environment variables in production
-- Never hardcode API keys in source code
+```
+User → Frontend (index.html)
+     → Flask API (routes/)
+     → OpenRouter AI (utils/openrouter.py)
+     → SQLite (utils/database.py)
+          → messages table (with user_id)
+          → users table (profile data)
+          → sync_queue table (offline)
+     → Optional: InsForge Cloud
+```
 
-## 📄 License
+## 📊 Database Schema
 
-MIT License - See LICENSE file for details
+### messages table
+```sql
+id, user_id, role, content, created_at, synced
+```
+
+### users table  
+```sql
+id, google_id, email, name, gender, age, 
+salary_range, phone, family_members, family_ages, created_at
+```
+
+## 🎯 Usage Tips
+
+1. **Login first** - Click Login button to save your profile
+2. **Fill profile** - Gender, age, salary help personalize responses
+3. **Upload PDF** - Analyze specific policies
+4. **Use Analyst** - For detailed analysis
+5. **Run sync** - Keep local backup updated
+
+## ✅ What's Implemented
+
+- [x] Flask web app with dark theme
+- [x] PDF upload and analysis
+- [x] Dual mode (Analyst/Salesman)
+- [x] OpenRouter AI integration
+- [x] SQLite database
+- [x] User login/profile system
+- [x] Chat history with user_id
+- [x] Offline sync queue
+- [x] JSON to SQL converter
+- [x] Organized data folders
+- [x] Complete workflow script
+
+## 🔜 Future Enhancements
+
+- [ ] Google OAuth
+- [ ] InsForge cloud backup
+- [ ] Admin panel
+- [ ] Analytics dashboard
+- [ ] Chat export to CSV
 
 ## 👨‍💻 Author
 
 Divakar Ravi
 
-## 🙏 Acknowledgments
+## 🙏 Thanks
 
-- [OpenRouter](https://openrouter.ai) - AI API provider
-- [Flask](https://flask.palletsprojects.com) - Web framework
+- [OpenRouter.ai](https://openrouter.ai) - Free AI API
+- [Flask](https://flask.palletsprojects.com) - Web framework  
 - [Tailwind CSS](https://tailwindcss.com) - CSS framework
+- [Diploi](https://diploi.com) - Hosting
