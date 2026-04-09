@@ -155,8 +155,60 @@
                 <span id="sync-indicator" class="px-3 py-1 bg-gray-800 text-gray-500 rounded-full border border-gray-600" title="Checking sync status...">
                     <i class="fa-solid fa-cloud mr-1"></i><span class="text-xs">Sync</span>
                 </span>
+                <span id="login-section" class="ml-2">
+                    <button onclick="showLogin()" class="px-3 py-1 bg-blue-600 text-white rounded-full border border-blue-500 text-sm">
+                        <i class="fa-solid fa-user mr-1"></i>Login
+                    </button>
+                </span>
+                <span id="user-section" class="ml-2 hidden">
+                    <span class="text-gray-300 text-sm" id="user-name"></span>
+                    <button onclick="showProfile()" class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs">
+                        <i class="fa-solid fa-user-gear"></i>
+                    </button>
+                </span>
             </div>
         </header>
+
+        <!-- Login Modal -->
+        <div id="login-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center">
+            <div class="glass-card rounded-2xl p-6 w-full max-w-md">
+                <h3 class="text-xl font-bold text-white mb-4">Login</h3>
+                <input type="text" id="login-name" placeholder="Your Name" class="w-full mb-3 px-4 py-3 rounded-xl bg-gray-800 border border-gray-600 text-white">
+                <input type="email" id="login-email" placeholder="Email" class="w-full mb-3 px-4 py-3 rounded-xl bg-gray-800 border border-gray-600 text-white">
+                <button onclick="doLogin()" class="w-full py-3 bg-blue-600 text-white rounded-xl font-medium">Login</button>
+                <button onclick="closeLogin()" class="w-full mt-2 py-2 text-gray-400 text-sm">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Profile Modal -->
+        <div id="profile-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center">
+            <div class="glass-card rounded-2xl p-6 w-full max-w-md">
+                <h3 class="text-xl font-bold text-white mb-4">Your Profile</h3>
+                <div class="space-y-3">
+                    <input type="text" id="profile-name" placeholder="Name" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
+                    <select id="profile-gender" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <input type="number" id="profile-age" placeholder="Age" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
+                    <select id="profile-salary" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
+                        <option value="">Salary Range</option>
+                        <option value="0-3L">₹0-3 Lakh</option>
+                        <option value="3-5L">₹3-5 Lakh</option>
+                        <option value="5-10L">₹5-10 Lakh</option>
+                        <option value="10-20L">₹10-20 Lakh</option>
+                        <option value="20L+">₹20 Lakh+</option>
+                    </select>
+                    <input type="tel" id="profile-phone" placeholder="Phone Number" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
+                    <input type="text" id="profile-members" placeholder="Family Members (e.g., Self, Spouse, 2 Kids)" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
+                    <input type="text" id="profile-ages" placeholder="Family Ages (e.g., 35, 30, 10, 8)" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
+                </div>
+                <button onclick="saveProfile()" class="w-full mt-4 py-2 bg-green-600 text-white rounded-lg">Save Profile</button>
+                <button onclick="closeProfile()" class="w-full mt-2 py-2 text-gray-400 text-sm">Cancel</button>
+            </div>
+        </div>
 
         <!-- Quick Actions -->
         <div class="glass-card rounded-2xl p-5 mb-4">
@@ -415,13 +467,16 @@
             showTyping();
 
             try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (userToken) headers['X-User-ID'] = userToken;
                 const response = await fetch('/upload/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify({ 
                         message,
                         document_id: currentDocId,
-                        mode: currentMode
+                        mode: currentMode,
+                        user_id: userToken
                     })
                 });
 
@@ -482,6 +537,92 @@
 
         function queueMessageForSync(msg) {
             localStorage.setItem('offline_queue', (localStorage.getItem('offline_queue') || '') + msg + '|||');
+        }
+
+        // Auth functions
+        let userToken = localStorage.getItem('user_token');
+        let userData = null;
+
+        function showLogin() {
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+        function closeLogin() {
+            document.getElementById('login-modal').classList.add('hidden');
+        }
+        async function doLogin() {
+            const name = document.getElementById('login-name').value;
+            const email = document.getElementById('login-email').value;
+            if (!email) { alert('Email required'); return; }
+            try {
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name, email})
+                });
+                const data = await res.json();
+                if (data.token) {
+                    userToken = data.token;
+                    localStorage.setItem('user_token', data.token);
+                    localStorage.setItem('user_name', data.name);
+                    closeLogin();
+                    showUserSection(data.name);
+                }
+            } catch(e) { alert('Login failed'); }
+        }
+        function showUserSection(name) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('user-section').classList.remove('hidden');
+            document.getElementById('user-name').textContent = name;
+        }
+        function showProfile() {
+            document.getElementById('profile-modal').classList.remove('hidden');
+            loadProfile();
+        }
+        function closeProfile() {
+            document.getElementById('profile-modal').classList.add('hidden');
+        }
+        async function loadProfile() {
+            if (!userToken) return;
+            try {
+                const res = await fetch('/auth/profile', {
+                    headers: {'Authorization': 'Bearer ' + userToken}
+                });
+                const data = await res.json();
+                if (data.email) {
+                    document.getElementById('profile-name').value = data.name || '';
+                    document.getElementById('profile-gender').value = data.gender || '';
+                    document.getElementById('profile-age').value = data.age || '';
+                    document.getElementById('profile-salary').value = data.salary_range || '';
+                    document.getElementById('profile-phone').value = data.phone || '';
+                    document.getElementById('profile-members').value = data.family_members || '';
+                    document.getElementById('profile-ages').value = data.family_ages || '';
+                }
+            } catch(e) {}
+        }
+        async function saveProfile() {
+            if (!userToken) return;
+            const profile = {
+                name: document.getElementById('profile-name').value,
+                gender: document.getElementById('profile-gender').value,
+                age: document.getElementById('profile-age').value,
+                salary_range: document.getElementById('profile-salary').value,
+                phone: document.getElementById('profile-phone').value,
+                family_members: document.getElementById('profile-members').value,
+                family_ages: document.getElementById('profile-ages').value
+            };
+            try {
+                await fetch('/auth/profile', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + userToken},
+                    body: JSON.stringify(profile)
+                });
+                closeProfile();
+                alert('Profile saved!');
+            } catch(e) { alert('Failed to save'); }
+        }
+        // Init user
+        if (userToken) {
+            showUserSection(localStorage.getItem('user_name') || 'User');
         }
 
         // Auto-sync on reconnect
