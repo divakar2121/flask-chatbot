@@ -145,7 +145,7 @@
                 <i class="fa-solid fa-shield-heart text-5xl text-white"></i>
             </div>
             <p class="text-xl text-gray-300">Your Trusted Health Insurance Advisor</p>
-            <div class="flex items-center justify-center gap-4 mt-3 text-sm">
+            <div class="flex items-center justify-center gap-2 mt-3 text-sm flex-wrap">
                 <span class="px-3 py-1 bg-gray-800 text-gray-400 rounded-full border border-gray-600">
                     <i class="fa-solid fa-heart-pulse mr-1"></i> Health Insurance
                 </span>
@@ -155,13 +155,11 @@
                 <span id="sync-indicator" class="px-3 py-1 bg-gray-800 text-gray-500 rounded-full border border-gray-600" title="Checking sync status...">
                     <i class="fa-solid fa-cloud mr-1"></i><span class="text-xs">Sync</span>
                 </span>
-                <span id="login-section" class="ml-2">
-                    <button onclick="showLogin()" class="px-3 py-1 bg-blue-600 text-white rounded-full border border-blue-500 text-sm">
-                        <i class="fa-solid fa-user mr-1"></i>Login
-                    </button>
-                </span>
-                <span id="user-section" class="ml-2 hidden">
-                    <span class="text-gray-300 text-sm" id="user-name"></span>
+                <button onclick="showLogin()" class="px-3 py-1 bg-blue-600 text-white rounded-full border border-blue-500 text-sm" style="display:inline-flex;align-items:center;">
+                    <i class="fa-solid fa-user mr-1"></i>Login
+                </button>
+                <span id="user-section" class="hidden">
+                    <span class="text-gray-300 text-sm mr-2" id="user-name"></span>
                     <button onclick="showProfile()" class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs">
                         <i class="fa-solid fa-user-gear"></i>
                     </button>
@@ -342,6 +340,9 @@
             const status = await checkSyncStatus();
             updateSyncIndicator(status);
         })();
+
+        // Ensure login button is visible
+        document.querySelectorAll('button[onclick="showLogin()"]').forEach(btn => btn.style.display = 'inline-flex');
 
         // Mode selector
         function setMode(mode) {
