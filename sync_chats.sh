@@ -2,14 +2,19 @@
 # Download chat history from Diploi server
 # Usage: ./sync_chats.sh
 #
-# Data is saved to: data/chat_history/
+# Data saved to: data/chat_history/
+#   data/chat_history/
+#   ├── latest.json           # All chats (newest first)
+#   ├── by_date/
+#   │   └── 2026-04-09.json   # Chats by date
+#   └── by_month/
+#       └── 2026-04.json     # Chats by month
 
 SERVER="https://my-dev--flsk-chtbt-th8v.diploi.me"
 DATA_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/data/chat_history"
 
 echo "🔄 Fetching chat history from server..."
 
-# Fetch and save
 curl -s "$SERVER/chat/history" | python3 -c "
 import sys, json
 from pathlib import Path
@@ -21,29 +26,42 @@ if not messages:
     print('No messages found')
     sys.exit(1)
 
-# Save latest.json
+# Create directories
+by_date = Path('$DATA_DIR/by_date')
+by_date.mkdir(parents=True, exist_ok=True)
+
+by_month = Path('$DATA_DIR/by_month')
+by_month.mkdir(parents=True, exist_ok=True)
+
+# Save latest.json (all messages)
 latest = Path('$DATA_DIR/latest.json')
-latest.parent.mkdir(parents=True, exist_ok=True)
 with open(latest, 'w') as f:
     json.dump(messages, f, indent=2)
 
-# Group by date
-grouped = defaultdict(list)
+# Group by date and month
+by_date_grouped = defaultdict(list)
+by_month_grouped = defaultdict(list)
+
 for m in messages:
-    date = m.get('created_at', '')[:10]
-    grouped[date].append(m)
+    dt = m.get('created_at', '')
+    date = dt[:10]      # 2026-04-09
+    month = dt[:7]     # 2026-04
+    by_date_grouped[date].append(m)
+    by_month_grouped[month].append(m)
 
-month_names = ['', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-
-for date, msgs in grouped.items():
-    year, month_num, day = date.split('-')
-    month = month_names[int(month_num)]
-    folder = Path(f'$DATA_DIR/{year}/{month_num}_{month}')
-    folder.mkdir(parents=True, exist_ok=True)
-    filepath = folder / f'{date}.json'
+# Save by date
+for date, msgs in by_date_grouped.items():
+    filepath = by_date / f'{date}.json'
     with open(filepath, 'w') as f:
         json.dump(msgs, f, indent=2)
-    print(f'✅ {date}: {len(msgs)} msgs')
+    print(f'📅 {date}: {len(msgs)} msgs')
+
+# Save by month
+for month, msgs in by_month_grouped.items():
+    filepath = by_month / f'{month}.json'
+    with open(filepath, 'w') as f:
+        json.dump(msgs, f, indent=2)
 
 print(f'📊 Total: {len(messages)} messages')
+print('✅ Saved to data/chat_history/')
 "
