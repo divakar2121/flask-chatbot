@@ -80,7 +80,13 @@ def json_to_sql(json_file, db_file):
     print(f"📂 Reading: {json_file}")
 
     with open(json_file, "r", encoding="utf-8") as f:
-        messages = json.load(f)
+        data = json.load(f)
+
+    # Handle {"messages": [...]} format
+    if isinstance(data, dict) and "messages" in data:
+        messages = data["messages"]
+    else:
+        messages = data
 
     print(f"📊 Found {len(messages)} messages")
 
