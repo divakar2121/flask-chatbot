@@ -155,43 +155,45 @@
                 <span id="sync-indicator" class="px-3 py-1 bg-gray-800 text-gray-500 rounded-full border border-gray-600" title="Checking sync status...">
                     <i class="fa-solid fa-cloud mr-1"></i><span class="text-xs">Sync</span>
                 </span>
-                <button onclick="showLogin()" class="px-3 py-1 bg-blue-600 text-white rounded-full border border-blue-500 text-sm" style="display:inline-flex;align-items:center;">
-                    <i class="fa-solid fa-user mr-1"></i>Login
+            </div>
+            <div class="text-center mt-2">
+                <button id="loginBtn" onclick="showLogin()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
+                    <i class="fa-solid fa-user mr-2"></i>Login / Sign Up
                 </button>
-                <span id="user-section" class="hidden">
-                    <span class="text-gray-300 text-sm mr-2" id="user-name"></span>
-                    <button onclick="showProfile()" class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs">
-                        <i class="fa-solid fa-user-gear"></i>
+                <span id="user-section" class="hidden ml-3" style="display:none;">
+                    <span class="text-white" id="user-name"></span>
+                    <button onclick="showProfile()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg ml-2">
+                        <i class="fa-solid fa-user-gear"></i> Profile
                     </button>
                 </span>
             </div>
         </header>
 
         <!-- Login Modal -->
-        <div id="login-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center">
-            <div class="glass-card rounded-2xl p-6 w-full max-w-md">
-                <h3 class="text-xl font-bold text-white mb-4">Login</h3>
-                <input type="text" id="login-name" placeholder="Your Name" class="w-full mb-3 px-4 py-3 rounded-xl bg-gray-800 border border-gray-600 text-white">
-                <input type="email" id="login-email" placeholder="Email" class="w-full mb-3 px-4 py-3 rounded-xl bg-gray-800 border border-gray-600 text-white">
-                <button onclick="doLogin()" class="w-full py-3 bg-blue-600 text-white rounded-xl font-medium">Login</button>
+        <div id="login-modal" class="fixed inset-0 bg-black/90 z-50 hidden" style="display:none;">
+            <div style="background:#1a1a1a;border:1px solid #444;border-radius:12px;padding:24px;max-width:400px;margin:100px auto;">
+                <h3 class="text-xl font-bold text-white mb-4">Login / Sign Up</h3>
+                <input type="text" id="login-name" placeholder="Your Name" class="w-full mb-3 px-4 py-3 rounded-lg bg-gray-800 border border-gray-600 text-white">
+                <input type="email" id="login-email" placeholder="Email" class="w-full mb-3 px-4 py-3 rounded-lg bg-gray-800 border border-gray-600 text-white">
+                <button onclick="doLogin()" class="w-full py-3 bg-blue-600 text-white rounded-lg font-medium">Continue</button>
                 <button onclick="closeLogin()" class="w-full mt-2 py-2 text-gray-400 text-sm">Cancel</button>
             </div>
         </div>
 
         <!-- Profile Modal -->
-        <div id="profile-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center">
-            <div class="glass-card rounded-2xl p-6 w-full max-w-md">
+        <div id="profile-modal" class="fixed inset-0 bg-black/90 z-50 hidden" style="display:none;">
+            <div style="background:#1a1a1a;border:1px solid #444;border-radius:12px;padding:24px;max-width:450px;margin:50px auto;overflow-y:auto;max-height:90vh;">
                 <h3 class="text-xl font-bold text-white mb-4">Your Profile</h3>
-                <div class="space-y-3">
-                    <input type="text" id="profile-name" placeholder="Name" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
-                    <select id="profile-gender" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
-                        <option value="">Select Gender</option>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <input type="text" id="profile-name" placeholder="Name" style="grid-column:span 2;padding:10px;border-radius:6px;background:#333;border:1px solid #555;color:white;">
+                    <select id="profile-gender" style="padding:10px;border-radius:6px;background:#333;border:1px solid #555;color:white;">
+                        <option value="">Gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                         <option value="other">Other</option>
                     </select>
-                    <input type="number" id="profile-age" placeholder="Age" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
-                    <select id="profile-salary" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
+                    <input type="number" id="profile-age" placeholder="Age" style="padding:10px;border-radius:6px;background:#333;border:1px solid #555;color:white;">
+                    <select id="profile-salary" style="grid-column:span 2;padding:10px;border-radius:6px;background:#333;border:1px solid #555;color:white;">
                         <option value="">Salary Range</option>
                         <option value="0-3L">₹0-3 Lakh</option>
                         <option value="3-5L">₹3-5 Lakh</option>
@@ -199,9 +201,9 @@
                         <option value="10-20L">₹10-20 Lakh</option>
                         <option value="20L+">₹20 Lakh+</option>
                     </select>
-                    <input type="tel" id="profile-phone" placeholder="Phone Number" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
-                    <input type="text" id="profile-members" placeholder="Family Members (e.g., Self, Spouse, 2 Kids)" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
-                    <input type="text" id="profile-ages" placeholder="Family Ages (e.g., 35, 30, 10, 8)" class="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm">
+                    <input type="tel" id="profile-phone" placeholder="Phone" style="grid-column:span 2;padding:10px;border-radius:6px;background:#333;border:1px solid #555;color:white;">
+                    <input type="text" id="profile-members" placeholder="Family (Self, Spouse, Kids)" style="grid-column:span 2;padding:10px;border-radius:6px;background:#333;border:1px solid #555;color:white;">
+                    <input type="text" id="profile-ages" placeholder="Ages (35, 30, 10)" style="grid-column:span 2;padding:10px;border-radius:6px;background:#333;border:1px solid #555;color:white;">
                 </div>
                 <button onclick="saveProfile()" class="w-full mt-4 py-2 bg-green-600 text-white rounded-lg">Save Profile</button>
                 <button onclick="closeProfile()" class="w-full mt-2 py-2 text-gray-400 text-sm">Cancel</button>
@@ -545,10 +547,10 @@
         let userData = null;
 
         function showLogin() {
-            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('login-modal').style.display = 'block';
         }
         function closeLogin() {
-            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('login-modal').style.display = 'none';
         }
         async function doLogin() {
             const name = document.getElementById('login-name').value;
@@ -571,16 +573,17 @@
             } catch(e) { alert('Login failed'); }
         }
         function showUserSection(name) {
-            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('loginBtn').style.display = 'none';
             document.getElementById('user-section').classList.remove('hidden');
+            document.getElementById('user-section').style.display = 'inline-flex';
             document.getElementById('user-name').textContent = name;
         }
         function showProfile() {
-            document.getElementById('profile-modal').classList.remove('hidden');
+            document.getElementById('profile-modal').style.display = 'block';
             loadProfile();
         }
         function closeProfile() {
-            document.getElementById('profile-modal').classList.add('hidden');
+            document.getElementById('profile-modal').style.display = 'none';
         }
         async function loadProfile() {
             if (!userToken) return;
