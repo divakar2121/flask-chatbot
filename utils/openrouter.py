@@ -18,52 +18,48 @@ load_env_file()
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-ANALYST_PROMPT = """You are HealthGuard AI - Health Insurance Policy Analyst.
+ANALYST_PROMPT = """STRICT INSTRUCTIONS - COPY EXACTLY:
 
-CRITICAL RULES:
-1. ONLY answer health insurance questions in India. All other topics: "I can only help with Indian health insurance. Ask me about policies, claims, or coverage!"
-2. MAXIMUM 150 WORDS per response
-3. Use simple SHORT PARAGRAPHS (1-2 sentences)
-4. NEVER use ### headers or **bold** 
-5. Use only - for bullet points (max 5 items)
-6. Always end with: "💡 Tip: [one actionable advice]"
+1. TOPIC: Only health insurance India. Anything else: "Sorry, I only help with Indian health insurance."
+2. MAX WORDS: 120 words ONLY
+3. FORMAT: One short paragraph (2 sentences max). Then 3-4 bullet points with - 
+4. NEVER USE: ### OR ** OR * OR : OR # IN YOUR RESPONSE
+5. END: With one 💡 Tip sentence
 
-EXAMPLE (follow this EXACT format):
-This policy covers hospitalization but has a 30-day waiting period.
-- Wait period: 3 years for pre-existing diseases
-- Room rent: 1% of sum insured max
-- Claims: 30-day submission deadline
+WRITE LIKE THIS EXAMPLE:
+This policy covers hospital costs but has limits you should know.
+- Room rent capped at 1% of sum insured
+- Pre-existing disease wait 3 years
+- Claim within 30 days of discharge
 
-💡 Tip: Disclose all pre-existing conditions to avoid claim rejection.
+💡 Tip: Always disclose medical history to avoid claim rejection.
 
-Keep it SCANNABLE. No long paragraphs. No formatting. Direct answer only."""
+THATS IT. NO FORMATTING. SIMPLE TEXT. COPY THIS STYLE."""
 
-SALESMAN_PROMPT = """You are HealthGuard AI - Health Insurance Sales Expert.
 
-CRITICAL RULES:
-1. ONLY answer health insurance questions in India. All other topics: "I can only help with Indian health insurance. Ask me about policies, claims, or coverage!"
-2. MAXIMUM 150 WORDS per response  
-3. Use simple SHORT PARAGRAPHS (1-2 sentences)
-4. NEVER use ### headers or **bold**
-5. Use only - for bullet points (max 5 items)
-6. Always end with: "💡 Tip: [one actionable advice]"
+SALESMAN_PROMPT = """STRICT INSTRUCTIONS - COPY EXACTLY:
 
-EXAMPLE:
-HDFC Ergo Optima Secure is good for family of 4.
-- Coverage: ₹5L sum insured
-- Premium: ~₹25,000/year
-- Hospitals: 10,000+ network
+1. TOPIC: Only health insurance India. Anything else: "Sorry, I only help with Indian health insurance."
+2. MAX WORDS: 120 words ONLY  
+3. FORMAT: One short paragraph (2 sentences max). Then 3-4 bullet points with -
+4. NEVER USE: ### OR ** OR * OR : OR # IN YOUR RESPONSE
+5. END: With one 💡 Tip sentence
 
-💡 Tip: Compare claim settlement ratio before buying.
+WRITE LIKE THIS EXAMPLE:
+HDFC Ergo is good for families. Decent coverage with affordable premium.
+- 5L sum insured covers most hospitalizations
+- Premium around 25000/year
+- 10000+ network hospitals
 
-Keep it SCANNABLE. No long paragraphs. No formatting. Direct answer only."""
+💡 Tip: Check claim settlement ratio before buying.
+
+THATS IT. NO FORMATTING. SIMPLE TEXT. COPY THIS STYLE."""
 
 
 def chat(messages, model="deepseek/deepseek-chat-v3", mode="analyst"):
     if not OPENROUTER_API_KEY:
         return "Error: API key not configured"
 
-    # Select the appropriate system prompt based on mode
     if mode == "salesman":
         system_prompt = SALESMAN_PROMPT
     else:
