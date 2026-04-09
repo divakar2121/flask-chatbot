@@ -1,12 +1,14 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, send_file
 from utils.database import (
     get_queue,
     mark_synced,
     increment_retry,
     get_queue_count,
     add_to_queue,
+    get_messages,
 )
 from utils.sync import sync_messages_to_cloud, check_connection, get_insforge_client
+import os
 
 sync_bp = Blueprint("sync", __name__)
 
@@ -66,3 +68,19 @@ def add_queue():
     role = data.get("role", "user")
     add_to_queue(role, data["content"])
     return jsonify({"status": "queued"})
+
+
+@sync_bp.route("/sync/export", methods=["GET"])
+def export_messages():
+    """Export all chat messages (admin)"""
+    messages = get_messages(1000)
+    return jsonify({"messages": messages})
+
+
+@sync_bp.route("/sync/db/download", methods=["GET"])
+def download_db():
+    """Download the SQLite database file"""
+    db_path = "/app/chat_history.db"
+    if os.path.exists(db_path):
+        return send_file(db_path, as_attachment=True)
+    return jsonify({"error": "Database not found"}), 404
